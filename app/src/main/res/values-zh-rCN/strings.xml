@@ -28,6 +28,7 @@
     <string name="next_folder_color">下一个文件夹颜色</string>
     <string name="previous_folder_color">上一个文件夹颜色</string>
     <string name="import_export">导入和导出</string>
+    <string name="import_export_choose_file_type">选择文件类型</string>
     <string name="password">密码</string>
     <string name="enable_password">启用密码</string>
     <string name="default_folder">记住最后一个文件夹</string>

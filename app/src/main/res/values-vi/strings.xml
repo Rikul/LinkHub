@@ -28,6 +28,7 @@
     <string name="next_folder_color">Màu thư mục tiếp theo</string>
     <string name="previous_folder_color">Màu thư mục trước đó</string>
     <string name="import_export">Nhập và xuất</string>
+    <string name="import_export_choose_file_type">Chọn loại tệp</string>
     <string name="password">Mật khẩu</string>
     <string name="enable_password">Bật mật khẩu</string>
     <string name="default_folder">Nhớ thư mục cuối cùng</string>

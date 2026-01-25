@@ -29,6 +29,7 @@
     <string name="next_folder_color">لون المجلد التالي</string>
     <string name="previous_folder_color">لون المجلد السابق</string>
     <string name="import_export">أستيراد أو تصدير</string>
+    <string name="import_export_choose_file_type">اختر نوع الملف</string>
     <string name="password">الرقم السري</string>
     <string name="enable_password">تفعيل الرقم السري</string>
     <string name="default_folder">تذكر المجلد الأخير</string>
