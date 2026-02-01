@@ -21,6 +21,11 @@
             android:defaultValue="@null"
             app:argType="com.amrdeveloper.linkhub.data.Link"
             app:nullable="true" />
+
+        <argument
+            android:name="parentFolderId"
+            android:defaultValue="-1"
+            app:argType="integer" />
     </fragment>
 
     <fragment
@@ -51,6 +56,11 @@
             android:defaultValue="@null"
             app:argType="com.amrdeveloper.linkhub.data.Folder"
             app:nullable="true" />
+
+        <argument
+            android:name="parentFolderId"
+            android:defaultValue="-1"
+            app:argType="integer" />
     </fragment>
 
     <fragment

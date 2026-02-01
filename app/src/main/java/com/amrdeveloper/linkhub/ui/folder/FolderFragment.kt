@@ -41,7 +41,8 @@ class FolderFragment : Fragment() {
                         currentFolder = safeArguments.folder,
                         viewModel = viewModel(),
                         uiPreferences = uiPreferences,
-                        navController = findNavController()
+                        navController = findNavController(),
+                        initialParentFolderId = safeArguments.parentFolderId.takeIf { it >= 0 }
                     )
                 }
             }

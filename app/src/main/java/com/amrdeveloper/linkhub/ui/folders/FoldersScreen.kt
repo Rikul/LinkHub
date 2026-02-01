@@ -24,6 +24,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.amrdeveloper.linkhub.R
+import com.amrdeveloper.linkhub.ui.components.AddLinkOrFolderFab
+import com.amrdeveloper.linkhub.ui.components.ClickToAddHint
 import com.amrdeveloper.linkhub.ui.components.FolderList
 import com.amrdeveloper.linkhub.ui.components.FolderViewKind
 import com.amrdeveloper.linkhub.ui.components.LinkhubToolbar
@@ -39,7 +41,10 @@ fun FoldersScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showItemsOption by remember { mutableStateOf(FolderViewKind.List) }
-    Scaffold(topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) }) { padding ->
+    Scaffold(
+        topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) },
+        floatingActionButton = { AddLinkOrFolderFab(navController) }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,27 +80,35 @@ fun FoldersScreen(
                 return@Column
             }
 
-            FolderList(
-                folders = uiState.data,
-                viewKind = showItemsOption,
-                onClick = { folder ->
-                    viewModel.incrementFolderClickCount(folder)
+            if (uiState.data.isEmpty()) {
+                ClickToAddHint(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = true)
+                )
+            } else {
+                FolderList(
+                    folders = uiState.data,
+                    viewKind = showItemsOption,
+                    onClick = { folder ->
+                        viewModel.incrementFolderClickCount(folder)
 
-                    val bundle = bundleOf("folder" to folder)
-                    navController.navigate(
-                        R.id.linkListFragment,
-                        bundle
-                    )
-                },
-                onLongClick = { folder ->
-                    val bundle = bundleOf("folder" to folder)
-                    navController.navigate(
-                        R.id.folderFragment,
-                        bundle
-                    )
-                },
-                minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
-            )
+                        val bundle = bundleOf("folder" to folder)
+                        navController.navigate(
+                            R.id.linkListFragment,
+                            bundle
+                        )
+                    },
+                    onLongClick = { folder ->
+                        val bundle = bundleOf("folder" to folder)
+                        navController.navigate(
+                            R.id.folderFragment,
+                            bundle
+                        )
+                    },
+                    minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
+                )
+            }
         }
 
     }

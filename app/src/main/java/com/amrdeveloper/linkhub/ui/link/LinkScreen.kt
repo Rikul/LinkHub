@@ -54,7 +54,8 @@ fun LinkScreen(
     isSharedLink: Boolean = false,
     viewModel: LinkViewModel = viewModel(),
     uiPreferences: UiPreferences,
-    navController: NavController
+    navController: NavController,
+    initialFolderId: Int? = null
 ) {
     val link = currentLink ?: Link(title = "", subtitle = "", url = "")
     val taskState = viewModel.taskState
@@ -181,13 +182,19 @@ fun LinkScreen(
             folders.addAll(0, listOf(artificialNoneFolder, artificialCreateNewFolder))
 
             if (selectedFolderDry) {
-                if (uiPreferences.isDefaultFolderEnabled()) {
+                val providedFolder = initialFolderId?.takeIf { it >= 0 }
+                    ?.let { id -> folders.find { it.id == id } }
+                val defaultFolder = if (uiPreferences.isDefaultFolderEnabled()) {
                     val defFolderId = uiPreferences.getDefaultFolderId()
-                    selectedFolder = folders.find { it.id == defFolderId }
-                        ?: folders.find { it.id == link.folderId } ?: folders[0]
-                } else {
-                    selectedFolder = folders.find { it.id == link.folderId } ?: folders[0]
-                }
+                    folders.find { it.id == defFolderId }
+                } else null
+                val linkedFolder = folders.find { it.id == link.folderId }
+                selectedFolder = providedFolder
+                    ?: defaultFolder
+                    ?: linkedFolder
+                    ?: folders.firstOrNull()
+                    ?: artificialNoneFolder
+                link.folderId = selectedFolder.id
             }
 
             // Check if user created a new folder for this link and suggest it as the current link folder

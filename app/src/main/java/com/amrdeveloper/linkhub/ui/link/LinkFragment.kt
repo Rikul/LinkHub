@@ -47,7 +47,8 @@ class LinkFragment : Fragment() {
                         isSharedLink = isSharedLink,
                         viewModel = viewModel(),
                         uiPreferences = uiPreferences,
-                        navController = findNavController()
+                        navController = findNavController(),
+                        initialFolderId = safeArguments.parentFolderId.takeIf { it >= 0 }
                     )
                 }
             }

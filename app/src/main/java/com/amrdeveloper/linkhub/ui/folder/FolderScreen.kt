@@ -46,7 +46,8 @@ fun FolderScreen(
     currentFolder: Folder?,
     viewModel: FolderViewModel = viewModel(),
     uiPreferences: UiPreferences,
-    navController: NavController
+    navController: NavController,
+    initialParentFolderId: Int? = null
 ) {
     val taskState = viewModel.taskState
     val folder = currentFolder ?: Folder(name = "").apply { folderColor = FolderColor.BLUE }
@@ -158,12 +159,19 @@ fun FolderScreen(
             folders.addAll(0, listOf(artificialNoneFolder))
 
             if (selectedFolderDry) {
-                if (uiPreferences.isDefaultFolderEnabled()) {
+                val providedFolder = initialParentFolderId?.takeIf { it >= 0 }
+                    ?.let { id -> folders.find { it.id == id } }
+                val defaultFolder = if (uiPreferences.isDefaultFolderEnabled()) {
                     val defFolderId = uiPreferences.getDefaultFolderId()
-                    selectedFolder = folders.find { it.id == defFolderId } ?: folders.find { it.id == folder.folderId } ?: folders[0]
-                } else {
-                    selectedFolder = folders.find { it.id == folder.folderId } ?: folders[0]
-                }
+                    folders.find { it.id == defFolderId }
+                } else null
+                val linkedFolder = folders.find { it.id == folder.folderId }
+                selectedFolder = providedFolder
+                    ?: defaultFolder
+                    ?: linkedFolder
+                    ?: folders.firstOrNull()
+                    ?: artificialNoneFolder
+                folder.folderId = selectedFolder.id
             }
 
             FolderSelector(selectedFolder = selectedFolder, folders = folders) {

@@ -30,6 +30,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.amrdeveloper.linkhub.R
 import com.amrdeveloper.linkhub.data.Link
+import com.amrdeveloper.linkhub.ui.components.AddLinkOrFolderFab
+import com.amrdeveloper.linkhub.ui.components.ClickToAddHint
 import com.amrdeveloper.linkhub.ui.components.FolderList
 import com.amrdeveloper.linkhub.ui.components.FolderViewKind
 import com.amrdeveloper.linkhub.ui.components.LinkActionsBottomSheet
@@ -49,89 +51,103 @@ fun HomeScreen(
     var lastClickedLink by remember { mutableStateOf<Link?>(value = null) }
     var showLinkActionsDialog by remember { mutableStateOf(value = false) }
 
-    Scaffold(topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) }) { padding ->
+    Scaffold(
+        topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) },
+        floatingActionButton = { AddLinkOrFolderFab(navController) }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (folders.value.data.isNotEmpty()) {
-                Text(
-                    text = "Most used Folders",
+            val isEmptyState =
+                folders.value.data.isEmpty() && links.value.data.isEmpty()
+
+            if (isEmptyState) {
+                ClickToAddHint(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colorResource(R.color.light_blue_600)
+                        .weight(1f, fill = true)
                 )
-
-                FolderList(
-                    folders = folders.value.data,
-                    viewKind = FolderViewKind.Grid,
-                    onClick = { folder ->
-                        viewModel.incrementFolderClickCount(folder)
-                        val bundle = bundleOf("folder" to folder)
-                        navController.navigate(R.id.linkListFragment, bundle)
-                    },
-                    onLongClick = { folder ->
-                        val bundle = bundleOf("folder" to folder)
-                        navController.navigate(R.id.folderFragment, bundle)
-                    },
-                    minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                        .clickable {
-                            navController.navigate(R.id.folderListFragment)
-                        },
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+            } else {
+                if (folders.value.data.isNotEmpty()) {
                     Text(
-                        text = "Show all",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
+                        text = "Most used Folders",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        maxLines = 1,
+                        style = MaterialTheme.typography.titleMedium,
                         color = colorResource(R.color.light_blue_600)
                     )
 
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_forward),
-                        contentDescription = "Show all",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(18.dp)
+                    FolderList(
+                        folders = folders.value.data,
+                        viewKind = FolderViewKind.Grid,
+                        onClick = { folder ->
+                            viewModel.incrementFolderClickCount(folder)
+                            val bundle = bundleOf("folder" to folder)
+                            navController.navigate(R.id.linkListFragment, bundle)
+                        },
+                        onLongClick = { folder ->
+                            val bundle = bundleOf("folder" to folder)
+                            navController.navigate(R.id.folderFragment, bundle)
+                        },
+                        minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                            .clickable {
+                                navController.navigate(R.id.folderListFragment)
+                            },
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Show all",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = colorResource(R.color.light_blue_600)
+                        )
+
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_forward),
+                            contentDescription = "Show all",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                if (links.value.data.isNotEmpty()) {
+                    Text(
+                        text = "Links",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        maxLines = 1,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colorResource(R.color.light_blue_600)
+                    )
+
+                    LinkList(
+                        links = links.value.data,
+                        onClick = { link ->
+                            viewModel.incrementLinkClickCount(link)
+                            lastClickedLink = link
+                            showLinkActionsDialog = true
+                        },
+                        onLongClick = { link ->
+                            val bundle = bundleOf("link" to link)
+                            navController.navigate(R.id.linkFragment, bundle)
+                        },
+                        showClickCount = uiPreferences.isClickCounterEnabled(),
+                        minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
                     )
                 }
-            }
-
-            if (links.value.data.isNotEmpty()) {
-                Text(
-                    text = "Links",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    maxLines = 1,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colorResource(R.color.light_blue_600)
-                )
-
-                LinkList(
-                    links = links.value.data,
-                    onClick = { link ->
-                        viewModel.incrementLinkClickCount(link)
-                        lastClickedLink = link
-                        showLinkActionsDialog = true
-                    },
-                    onLongClick = { link ->
-                        val bundle = bundleOf("link" to link)
-                        navController.navigate(R.id.linkFragment, bundle)
-                    },
-                    showClickCount = uiPreferences.isClickCounterEnabled(),
-                    minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
-                )
             }
 
             if (showLinkActionsDialog) {

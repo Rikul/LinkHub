@@ -30,6 +30,8 @@ import androidx.navigation.NavController
 import com.amrdeveloper.linkhub.R
 import com.amrdeveloper.linkhub.data.Folder
 import com.amrdeveloper.linkhub.data.Link
+import com.amrdeveloper.linkhub.ui.components.AddLinkOrFolderFab
+import com.amrdeveloper.linkhub.ui.components.ClickToAddHint
 import com.amrdeveloper.linkhub.ui.components.FolderList
 import com.amrdeveloper.linkhub.ui.components.FolderViewKind
 import com.amrdeveloper.linkhub.ui.components.LinkActionsBottomSheet
@@ -53,7 +55,13 @@ fun ExplorerScreen(
 
     val sortedFoldersState by viewModel.sortedFoldersState.collectAsStateWithLifecycle()
     val sortedLinksState by viewModel.sortedLinksState.collectAsStateWithLifecycle()
-    Scaffold(topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) }) { padding ->
+    val isEmptyState =
+        sortedFoldersState.data.isEmpty() && sortedLinksState.data.isEmpty()
+
+    Scaffold(
+        topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) },
+        floatingActionButton = { AddLinkOrFolderFab(navController, currentFolder?.id) }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -70,44 +78,52 @@ fun ExplorerScreen(
                 return@Column
             }
 
-            FolderList(
-                folders = sortedFoldersState.data,
-                viewKind = FolderViewKind.List,
-                onClick = { folder ->
-                    viewModel.incrementFolderClickCount(folder)
-                    val bundle = bundleOf("folder" to folder)
-                    navController.navigate(
-                        R.id.linkListFragment,
-                        bundle
-                    )
-                },
-                onLongClick = { folder ->
-                    val bundle = bundleOf("folder" to folder)
-                    navController.navigate(
-                        R.id.folderFragment,
-                        bundle
-                    )
-                },
-                minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
-            )
+            if (isEmptyState) {
+                ClickToAddHint(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = true)
+                )
+            } else {
+                FolderList(
+                    folders = sortedFoldersState.data,
+                    viewKind = FolderViewKind.List,
+                    onClick = { folder ->
+                        viewModel.incrementFolderClickCount(folder)
+                        val bundle = bundleOf("folder" to folder)
+                        navController.navigate(
+                            R.id.linkListFragment,
+                            bundle
+                        )
+                    },
+                    onLongClick = { folder ->
+                        val bundle = bundleOf("folder" to folder)
+                        navController.navigate(
+                            R.id.folderFragment,
+                            bundle
+                        )
+                    },
+                    minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
+                )
 
-            LinkList(
-                links = sortedLinksState.data,
-                onClick = { link ->
-                    viewModel.incrementLinkClickCount(link)
-                    lastClickedLink = link
-                    showLinkActionsDialog = true
-                },
-                onLongClick = { link ->
-                    val bundle = bundleOf("link" to link)
-                    navController.navigate(
-                        R.id.linkFragment,
-                        bundle
-                    )
-                },
-                showClickCount = uiPreferences.isClickCounterEnabled(),
-                minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
-            )
+                LinkList(
+                    links = sortedLinksState.data,
+                    onClick = { link ->
+                        viewModel.incrementLinkClickCount(link)
+                        lastClickedLink = link
+                        showLinkActionsDialog = true
+                    },
+                    onLongClick = { link ->
+                        val bundle = bundleOf("link" to link)
+                        navController.navigate(
+                            R.id.linkFragment,
+                            bundle
+                        )
+                    },
+                    showClickCount = uiPreferences.isClickCounterEnabled(),
+                    minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
+                )
+            }
 
             if (showLinkActionsDialog) {
                 lastClickedLink?.let { link ->

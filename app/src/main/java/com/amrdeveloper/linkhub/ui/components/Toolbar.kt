@@ -97,36 +97,6 @@ private fun OptionsMenuWithDropDownActions(navController: NavController) {
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text("New Link") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_link),
-                        contentDescription = "New Link",
-                        tint = Color.Unspecified
-                    )
-                },
-                onClick = {
-                    navController.navigate(R.id.linkFragment)
-                    expanded = false
-                }
-            )
-
-            DropdownMenuItem(
-                text = { Text("New Folder") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_folders),
-                        contentDescription = "New Folder",
-                        tint = Color.Unspecified
-                    )
-                },
-                onClick = {
-                    navController.navigate(R.id.folderFragment)
-                    expanded = false
-                }
-            )
-
             if (currentDestination?.id != R.id.folderListFragment) {
                 DropdownMenuItem(
                     text = { Text("Explorer") },
