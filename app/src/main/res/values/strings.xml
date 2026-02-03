@@ -95,8 +95,17 @@
 
     <!-- Password error message -->
     <string name="error_password_empty">Password can\'t be empty</string>
-    <string name="error_incorrect_password">Password is incorrect</string>
+    <string name="error_incorrect_password">Incorrect password</string>
     <string name="error_password_back_from_check">Can\'t ignore password check</string>
+    <string name="error_passwords_not_match">Passwords do not match</string>
+    <string name="error_password_too_short">Must be at least 5 characters</string>
+
+    <!-- Folder protection -->
+    <string name="password_protected">Password Protected</string>
+    <string name="enter_password">Enter Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
     <!--Shortcuts-->
     <string name="folder_create">Create Folder</string>

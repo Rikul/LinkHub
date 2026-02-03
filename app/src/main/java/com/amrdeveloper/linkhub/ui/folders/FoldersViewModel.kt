@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.amrdeveloper.linkhub.common.LazyValue
 import com.amrdeveloper.linkhub.data.Folder
 import com.amrdeveloper.linkhub.data.source.FolderRepository
+import com.amrdeveloper.linkhub.util.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,13 +24,19 @@ class FolderListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val searchQuery = MutableStateFlow(value = "")
+    private val allFoldersFlow = folderRepository.getSortedFolders()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<LazyValue<List<Folder>>> =
-        combine(searchQuery) {
-            searchQuery.value
-        }.flatMapLatest { query ->
-            folderRepository.getSortedFolders(keyword = query)
+        combine(searchQuery, allFoldersFlow) { query, allFolders ->
+            query to allFolders
+        }.flatMapLatest { (query, allFolders) ->
+            val foldersMap = allFolders.associateBy { it.id }
+            folderRepository.getSortedFolders(keyword = query).map { results ->
+                results.filter { folder ->
+                    SessionManager.isParentChainAccessible(folder.folderId, foldersMap)
+                }
+            }
         }.map { LazyValue(data = it, isLoading = false) }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L),

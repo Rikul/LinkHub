@@ -7,6 +7,7 @@ import com.amrdeveloper.linkhub.data.Folder
 import com.amrdeveloper.linkhub.data.Link
 import com.amrdeveloper.linkhub.data.source.FolderRepository
 import com.amrdeveloper.linkhub.data.source.LinkRepository
+import com.amrdeveloper.linkhub.util.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,18 +36,22 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val searchParams = MutableStateFlow(value = SearchParams())
+    private val allFoldersFlow = folderRepository.getSortedFolders()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val sortedFoldersState: StateFlow<LazyValue<List<Folder>>> =
-        combine(searchParams) {
-            searchParams.value
-        }.flatMapLatest { params ->
+        combine(searchParams, allFoldersFlow) { params, allFolders ->
+            params to allFolders
+        }.flatMapLatest { (params, allFolders) ->
+            val foldersMap = allFolders.associateBy { it.id }
             folderRepository.getSortedFolders(
                 keyword = params.query,
                 isPinned = params.isPinnedSelected,
                 isClicked = params.isClickedSelected,
                 isInsideFolder = params.isInsideFolder,
-            )
+            ).map { folders ->
+                folders.filter { SessionManager.isParentChainAccessible(it.folderId, foldersMap) }
+            }
         }.map { LazyValue(data = it, isLoading = false) }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L),
@@ -55,15 +60,18 @@ class SearchViewModel @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val sortedLinksState: StateFlow<LazyValue<List<Link>>> =
-        combine(searchParams) {
-            searchParams.value
-        }.flatMapLatest { params ->
+        combine(searchParams, allFoldersFlow) { params, allFolders ->
+            params to allFolders
+        }.flatMapLatest { (params, allFolders) ->
+            val foldersMap = allFolders.associateBy { it.id }
             linkRepository.getSortedLinks(
                 keyword = params.query,
                 isPinned = params.isPinnedSelected,
                 isClicked = params.isClickedSelected,
                 isInsideFolder = params.isInsideFolder,
-            )
+            ).map { links ->
+                links.filter { SessionManager.isParentChainAccessible(it.folderId, foldersMap) }
+            }
         }.map {
             LazyValue(data = it, isLoading = false)
         }.stateIn(

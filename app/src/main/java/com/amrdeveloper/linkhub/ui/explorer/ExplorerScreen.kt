@@ -37,6 +37,8 @@ import com.amrdeveloper.linkhub.ui.components.FolderViewKind
 import com.amrdeveloper.linkhub.ui.components.LinkActionsBottomSheet
 import com.amrdeveloper.linkhub.ui.components.LinkList
 import com.amrdeveloper.linkhub.ui.components.LinkhubToolbar
+import com.amrdeveloper.linkhub.ui.components.PasswordDialog
+import com.amrdeveloper.linkhub.util.SessionManager
 import com.amrdeveloper.linkhub.util.UiPreferences
 
 @Composable
@@ -49,6 +51,10 @@ fun ExplorerScreen(
     var lastClickedLink by remember { mutableStateOf<Link?>(value = null) }
     var showLinkActionsDialog by remember { mutableStateOf(value = false) }
 
+    var showPasswordDialog by remember { mutableStateOf(false) }
+    var pendingFolder by remember { mutableStateOf<Folder?>(null) }
+    var isEditAction by remember { mutableStateOf(false) }
+
     LaunchedEffect(true) {
         currentFolder?.let { viewModel.updateFolderId(folderId = it.id) }
     }
@@ -57,6 +63,31 @@ fun ExplorerScreen(
     val sortedLinksState by viewModel.sortedLinksState.collectAsStateWithLifecycle()
     val isEmptyState =
         sortedFoldersState.data.isEmpty() && sortedLinksState.data.isEmpty()
+
+    if (showPasswordDialog && pendingFolder != null) {
+        PasswordDialog(
+            hashedPassword = pendingFolder!!.password ?: "",
+            onSuccess = {
+                SessionManager.unlockFolder(pendingFolder!!.id)
+                showPasswordDialog = false
+
+                val bundle = bundleOf("folder" to pendingFolder)
+                if (isEditAction) {
+                    navController.navigate(R.id.folderFragment, bundle)
+                } else {
+                    viewModel.incrementFolderClickCount(pendingFolder!!)
+                    navController.navigate(R.id.linkListFragment, bundle)
+                }
+                pendingFolder = null
+                isEditAction = false
+            },
+            onDismiss = {
+                showPasswordDialog = false
+                pendingFolder = null
+                isEditAction = false
+            }
+        )
+    }
 
     Scaffold(
         topBar = { LinkhubToolbar(viewModel(), uiPreferences, navController) },
@@ -89,19 +120,24 @@ fun ExplorerScreen(
                     folders = sortedFoldersState.data,
                     viewKind = FolderViewKind.List,
                     onClick = { folder ->
-                        viewModel.incrementFolderClickCount(folder)
-                        val bundle = bundleOf("folder" to folder)
-                        navController.navigate(
-                            R.id.linkListFragment,
-                            bundle
-                        )
+                        if (SessionManager.isFolderAccessible(folder, sortedFoldersState.data)) {
+                            viewModel.incrementFolderClickCount(folder)
+                            val bundle = bundleOf("folder" to folder)
+                            navController.navigate(R.id.linkListFragment, bundle)
+                        } else {
+                            pendingFolder = folder
+                            showPasswordDialog = true
+                        }
                     },
                     onLongClick = { folder ->
-                        val bundle = bundleOf("folder" to folder)
-                        navController.navigate(
-                            R.id.folderFragment,
-                            bundle
-                        )
+                        if (SessionManager.isFolderAccessible(folder, sortedFoldersState.data)) {
+                            val bundle = bundleOf("folder" to folder)
+                            navController.navigate(R.id.folderFragment, bundle)
+                        } else {
+                            pendingFolder = folder
+                            isEditAction = true
+                            showPasswordDialog = true
+                        }
                     },
                     minimalModeEnabled = uiPreferences.isMinimalModeEnabled()
                 )

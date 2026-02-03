@@ -12,7 +12,7 @@ import com.amrdeveloper.linkhub.data.Folder
 import com.amrdeveloper.linkhub.data.Link
 
 const val DATABASE_NAME = "link_database"
-const val DATABASE_VERSION = 6
+const val DATABASE_VERSION = 7
 
 @Database(
     entities = [Link::class, Folder::class],
@@ -22,7 +22,8 @@ const val DATABASE_VERSION = 6
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
-        AutoMigration(from = 5, to = 6)
+        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7)
     ],
     exportSchema = true,
 )

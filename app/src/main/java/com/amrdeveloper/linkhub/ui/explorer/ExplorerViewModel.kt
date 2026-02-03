@@ -7,6 +7,7 @@ import com.amrdeveloper.linkhub.data.Folder
 import com.amrdeveloper.linkhub.data.Link
 import com.amrdeveloper.linkhub.data.source.FolderRepository
 import com.amrdeveloper.linkhub.data.source.LinkRepository
+import com.amrdeveloper.linkhub.util.SessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,27 +33,38 @@ class LinkListViewModel @Inject constructor(
 
     private val searchQuery = MutableStateFlow(value = "")
     private val currentFolderId = MutableStateFlow(value = -1)
+    private val allFoldersFlow = folderRepository.getSortedFolders()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val sortedFoldersState: StateFlow<LazyValue<List<Folder>>> =
-        combine(currentFolderId, searchQuery) { folderId, query ->
-            QueryParam(folderId, query)
-        }.flatMapLatest { params ->
+        combine(currentFolderId, searchQuery, allFoldersFlow) { folderId, query, allFolders ->
+            Triple(QueryParam(folderId, query), allFolders, allFolders.associateBy { it.id })
+        }.flatMapLatest { (params, _, foldersMap) ->
             folderRepository.getSortedFolders(
                 keyword = params.query,
                 folderId = params.folderId
-            )
+            ).map { folders ->
+                folders.filter { folder ->
+                    SessionManager.isParentChainAccessible(folder.folderId, foldersMap)
+                }
+            }
         }.map { LazyValue(data = it, isLoading = false) }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L),
             initialValue = LazyValue(data = listOf(), isLoading = true)
         )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val sortedLinksState: StateFlow<LazyValue<List<Link>>> =
-        combine(currentFolderId, searchQuery) { folderId, query ->
-            QueryParam(folderId, query)
-        }.flatMapLatest { params ->
+        combine(currentFolderId, searchQuery, allFoldersFlow) { folderId, query, allFolders ->
+            Triple(QueryParam(folderId, query), allFolders, allFolders.associateBy { it.id })
+        }.flatMapLatest { (params, _, foldersMap) ->
             linkRepository.getSortedLinks(keyword = params.query, folderId = params.folderId)
+                .map { links ->
+                    links.filter { link ->
+                        SessionManager.isParentChainAccessible(link.folderId, foldersMap)
+                    }
+                }
         }.map {
             LazyValue(data = it, isLoading = false)
         }.stateIn(

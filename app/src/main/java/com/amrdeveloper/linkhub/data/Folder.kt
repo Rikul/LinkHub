@@ -17,6 +17,7 @@ data class Folder(
     @ColumnInfo(name = "folder_id", defaultValue = "-1") var folderId: Int = -1,
     @ColumnInfo(name = "click_count") var clickedCount: Int = 0,
     @ColumnInfo(name = "color_name") var folderColor: FolderColor = FolderColor.NONE,
+    @ColumnInfo(name = "password") var password: String? = null,
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 ) : Parcelable {
     override fun toString(): String = name
