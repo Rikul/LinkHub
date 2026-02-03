@@ -16,3 +16,4 @@ local.properties
 .idea
 AGENTS.md
 CLAUDE.md
+.idea/deploymentTargetSelector.xml

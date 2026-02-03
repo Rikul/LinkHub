@@ -13,10 +13,19 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="All Tests">
+      <SelectionState runConfigName="passwordProtectedFolder_childrenHaveNoPasswordUI()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="passwordProtectedToggle_existsInFolderForm()">
+      <SelectionState runConfigName="passwordProtectedFolder_removingPasswordWorks()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="passwordProtectedFolder_editFormShowsMaskedPassword()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="passwordProtectedFolder_changePasswordWorks()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="passwordProtectedFolder_incorrectPasswordShowsError()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
